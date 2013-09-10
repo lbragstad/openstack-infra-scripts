@@ -25,9 +25,7 @@ LPCACHEDIR = os.path.expanduser(os.environ.get('LPCACHEDIR',
                                                '~/.launchpadlib/cache'))
 LPPROJECT = os.environ.get('LPPROJECT',
                            'openstack-ci')
-LPSTATUS = ('New', 'Incomplete', 'Incomplete (with response)',
-            'Incomplete (without response)', 'Confirmed', 'Triaged',
-            'In Progress')
+LPSTATUS = ('New', 'Confirmed', 'Triaged', 'In Progress')
 
 
 def main():
@@ -39,7 +37,8 @@ def main():
                                     omit_duplicates=True,
                                     order_by='-importance'):
         bug = launchpad.load(task.bug_link)
-        print '[%s] %s %s\n' % (task.importance, bug.title, task.web_link)
+        print '[%s] %s %s' % (task.importance, bug.title, task.web_link)
+        print 'COPIED FROM LAST REVIEW:\n'
 
 
 if __name__ == "__main__":
