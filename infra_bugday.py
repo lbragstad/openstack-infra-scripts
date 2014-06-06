@@ -18,10 +18,9 @@
 
 import os
 import re
-import sys
-from launchpadlib.launchpad import Launchpad
 
 import json
+from launchpadlib.launchpad import Launchpad
 import requests
 
 LPCACHEDIR = os.path.expanduser(os.environ.get('LPCACHEDIR',
@@ -32,6 +31,7 @@ LPSTATUS = ('New', 'Confirmed', 'Triaged', 'In Progress')
 
 RE_LINK = re.compile(' https://review.openstack.org/(\d+)')
 
+
 def get_reviews_from_bug(bug):
     """Return a list of gerrit reviews extracted from the bug's comments."""
     reviews = set()
@@ -39,11 +39,16 @@ def get_reviews_from_bug(bug):
         reviews |= set(RE_LINK.findall(comment.content))
     return reviews
 
+
 def get_review_status(review_number):
     """Return status of a given review number."""
-    r = requests.get("https://review.openstack.org:443/changes/%s" % review_number)
+    r = requests.get("https://review.openstack.org:443/changes/%s"
+                     % review_number)
+    # strip off first few chars because 'the JSON response body starts with a
+    # magic prefix line that must be stripped before feeding the rest of the
+    # response body to a JSON parser'
+    #https://review.openstack.org/Documentation/rest-api.html
     return json.loads(r.text[4:])['status']
-
 
 
 def main():
@@ -57,7 +62,8 @@ def main():
         bug = launchpad.load(task.bug_link)
         print '[%s] %s %s' % (task.importance, bug.title, task.web_link)
         for review in get_reviews_from_bug(bug):
-            print " - https://review.openstack.org/%s -- %s"  % (review,get_review_status(review))
+            print (" - https://review.openstack.org/%s -- %s"
+                   % (review, get_review_status(review)))
         print 'COPIED FROM LAST REVIEW:\n'
 
 
