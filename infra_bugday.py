@@ -56,11 +56,12 @@ def main():
                                             'production',
                                             LPCACHEDIR)
     project = launchpad.projects[LPPROJECT]
+    counter = 0
     for task in project.searchTasks(status=LPSTATUS,
                                     omit_duplicates=True,
                                     order_by='-importance'):
         bug = launchpad.load(task.bug_link)
-        print '[%s] %s %s' % (task.importance, bug.title, task.web_link)
+        print '%d. [%s] %s %s' % (counter, task.importance, bug.title, task.web_link)
         for line in map(lambda x: "(%s - %s)" %
                         (x.bug_target_name, x.status),
                         bug.bug_tasks):
@@ -68,6 +69,7 @@ def main():
         for review in get_reviews_from_bug(bug):
             print (" - https://review.openstack.org/%s -- %s"
                    % (review, get_review_status(review)))
+        counter+=1
 
 
 if __name__ == "__main__":
