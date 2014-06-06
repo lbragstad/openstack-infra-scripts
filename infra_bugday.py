@@ -48,7 +48,12 @@ def get_review_status(review_number):
     # magic prefix line that must be stripped before feeding the rest of the
     # response body to a JSON parser'
     #https://review.openstack.org/Documentation/rest-api.html
-    return json.loads(r.text[4:])['status']
+    status = None
+    try:
+        status = json.loads(r.text[4:])['status']
+    except ValueError:
+        print r.text
+    return status
 
 
 def main():
@@ -61,7 +66,17 @@ def main():
                                     omit_duplicates=True,
                                     order_by='-importance'):
         bug = launchpad.load(task.bug_link)
-        print '%d. [%s] %s %s' % (counter, task.importance, bug.title, task.web_link)
+        try:
+            # TODO(jogo) fix unicode issues
+            print "%d. [%s] %s %s" % (counter,
+                                      task.importance,
+                                      bug.title,
+                                      task.web_link)
+        except (TypeError, UnicodeEncodeError):
+            print "%d. [%s] %s" % (counter,
+                                   task.importance,
+                                   task.web_link)
+            continue
         for line in map(lambda x: "(%s - %s)" %
                         (x.bug_target_name, x.status),
                         bug.bug_tasks):
@@ -69,7 +84,7 @@ def main():
         for review in get_reviews_from_bug(bug):
             print (" - https://review.openstack.org/%s -- %s"
                    % (review, get_review_status(review)))
-        counter+=1
+        counter += 1
 
 
 if __name__ == "__main__":
