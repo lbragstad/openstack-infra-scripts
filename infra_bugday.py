@@ -61,10 +61,13 @@ def main():
                                     order_by='-importance'):
         bug = launchpad.load(task.bug_link)
         print '[%s] %s %s' % (task.importance, bug.title, task.web_link)
+        for line in map(lambda x: "(%s - %s)" %
+                        (x.bug_target_name, x.status),
+                        bug.bug_tasks):
+            print line
         for review in get_reviews_from_bug(bug):
             print (" - https://review.openstack.org/%s -- %s"
                    % (review, get_review_status(review)))
-        print 'COPIED FROM LAST REVIEW:\n'
 
 
 if __name__ == "__main__":
