@@ -16,10 +16,11 @@
 # infra_bugday.py pulls out all the bugs from the openstack-ci project in
 # launchpad
 
+import argparse
+import json
 import os
 import re
 
-import json
 from launchpadlib.launchpad import Launchpad
 import requests
 
@@ -47,7 +48,7 @@ def get_review_status(review_number):
     # strip off first few chars because 'the JSON response body starts with a
     # magic prefix line that must be stripped before feeding the rest of the
     # response body to a JSON parser'
-    #https://review.openstack.org/Documentation/rest-api.html
+    # https://review.openstack.org/Documentation/rest-api.html
     status = None
     try:
         status = json.loads(r.text[4:])['status']
@@ -57,6 +58,16 @@ def get_review_status(review_number):
 
 
 def main():
+    parser = argparse.ArgumentParser(description='pull all bugs from a '
+            'launchpad project')
+    parser.add_argument('-g', '--gerrit',
+            action="store_true",
+            help='print related gerrit patches')
+    parser.add_argument('-s', '--status',
+            action="store_true",
+            help='print bug status')
+    args = parser.parse_args()
+
     launchpad = Launchpad.login_anonymously('OpenStack Infra Bugday',
                                             'production',
                                             LPCACHEDIR)
@@ -77,13 +88,16 @@ def main():
                                    task.importance,
                                    task.web_link)
             continue
-        for line in map(lambda x: "(%s - %s)" %
-                        (x.bug_target_name, x.status),
-                        bug.bug_tasks):
-            print line
-        for review in get_reviews_from_bug(bug):
-            print (" - https://review.openstack.org/%s -- %s"
-                   % (review, get_review_status(review)))
+        if args.status:
+            for line in map(lambda x: "(%s - %s)" %
+                            (x.bug_target_name, x.status),
+                            bug.bug_tasks):
+                print line
+        if args.gerrit:
+            for review in get_reviews_from_bug(bug):
+                print (" - https://review.openstack.org/%s -- %s"
+                       % (review, get_review_status(review)))
+        print
         counter += 1
 
 
