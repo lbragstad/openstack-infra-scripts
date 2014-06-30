@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 #
-# brangler.py is intended to summarize bug information from Launchpad
 
 import argparse
 import datetime
