@@ -48,15 +48,17 @@ def main():
             type=int,
             help='history in number of days')
     parser.add_argument('-p', '--project',
-            default='keystone',
+            nargs=1,
+            required=True,
             help='launchpad project to pull bugs from')
     args = parser.parse_args()
 
     launchpad = Launchpad.login_anonymously('OpenStack Infra Bugday',
                                             'production',
-                                            args.project)
+                                            args.project[0])
 
-    project = launchpad.projects[args.project]
+
+    project = launchpad.projects[args.project[0]]
     bug_counter = 0
 
     for bug in project.searchTasks(status=LPSTATUS,
