@@ -55,7 +55,7 @@ def main():
             # Replace the tzinfo so it doesn't screw with comparisons
             bug_created_time = bug.date_created.replace(tzinfo=None)
             if bug_created_time >= today - delta:
-                print "%d. %s %s" % (bug_counter,
+                print "%d. [%s] %s" % (bug_counter,
                                      bug.importance,
                                      bug.title)
                 print "%s \n" % (bug.web_link)
