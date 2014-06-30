@@ -53,7 +53,7 @@ def main():
             help='launchpad project to pull bugs from')
     args = parser.parse_args()
 
-    launchpad = Launchpad.login_anonymously('OpenStack Infra Bugday',
+    launchpad = Launchpad.login_anonymously('OpenStack Recent Bugs',
                                             'production',
                                             args.project[0])
 
