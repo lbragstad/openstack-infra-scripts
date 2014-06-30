@@ -58,7 +58,7 @@ def main():
                 print "%d. %s %s" % (bug_counter,
                                      bug.importance,
                                      bug.title)
-                print "%s" % (bug.web_link)
+                print "%s \n" % (bug.web_link)
                 bug_counter += 1
 
 
