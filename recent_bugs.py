@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-#
 
 import argparse
 import datetime
@@ -25,9 +24,29 @@ LPCACHEDIR = os.path.expanduser(os.environ.get('LPCACHEDIR',
 LPSTATUS = ('New', 'Confirmed', 'Triaged', 'In Progress')
 
 
+def bug_is_recent(bug, num_of_days):
+    """Determine if a bug was created in the last X days and print the bug
+       information."""
+    invalid_states = ["Incomplete", "Opinion", "Won't Fix", "Expired",
+                      "Fix Released", "Fix Committed"]
+    if bug.status not in invalid_states:
+        # Create timedelta object to compare bug creation times against.
+        # Let's print out the bug from the last two days.
+        delta = datetime.timedelta(days=num_of_days)
+        today = datetime.datetime.today()
+        # Replace tzinfo so that it doesn't mess with comparisons.
+        bug_created_time = bug.date_created.replace(tzinfo=None)
+        if bug_created_time >= today - delta:
+            return True
+
+
 def main():
     parser = argparse.ArgumentParser(description='summarize bugs from a '
              'launchpad project')
+    parser.add_argument('-d', '--days',
+            default='2',
+            type=int,
+            help='history in number of days')
     parser.add_argument('-p', '--project',
             default='keystone',
             help='launchpad project to pull bugs from')
@@ -43,23 +62,12 @@ def main():
     for bug in project.searchTasks(status=LPSTATUS,
                                    omit_duplicates=True,
                                    order_by='-importance'):
-
-        invalid_states = ["Incomplete", "Opinion", "Won't Fix", "Expired",
-                          "Fix Released", "Fix Committed"]
-
-        if bug.status not in invalid_states:
-            # Create timedelta object to compare bug creation times against.
-            # Let's print out the bug from the last two days.
-            delta = datetime.timedelta(days=2)
-            today = datetime.datetime.today()
-            # Replace the tzinfo so it doesn't screw with comparisons
-            bug_created_time = bug.date_created.replace(tzinfo=None)
-            if bug_created_time >= today - delta:
-                print "%d. [%s] %s" % (bug_counter,
-                                     bug.importance,
-                                     bug.title)
-                print "%s \n" % (bug.web_link)
-                bug_counter += 1
+        if bug_is_recent(bug, args.days):
+            print "%d. [%s] %s" % (bug_counter,
+                                   bug.importance,
+                                   bug.title)
+            print "\t%s \n" % (bug.web_link)
+            bug_counter += 1
 
 
 if __name__ == '__main__':

@@ -1,0 +1,6 @@
+keystone/*
+nova/*
+cinder/*
+glance/*
+neutron/*
+tempest/*
