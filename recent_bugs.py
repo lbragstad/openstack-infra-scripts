@@ -25,8 +25,7 @@ LPSTATUS = ('New', 'Confirmed', 'Triaged', 'In Progress')
 
 
 def is_bug_recent(bug, num_of_days):
-    """Determine if a bug was created in the last X days and print the bug
-       information."""
+    """Determine if a bug was created in the last X days."""
     invalid_states = ["Incomplete", "Opinion", "Won't Fix", "Expired",
                       "Fix Released", "Fix Committed"]
     if bug.status not in invalid_states:
