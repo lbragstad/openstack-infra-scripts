@@ -24,7 +24,7 @@ LPCACHEDIR = os.path.expanduser(os.environ.get('LPCACHEDIR',
 LPSTATUS = ('New', 'Confirmed', 'Triaged', 'In Progress')
 
 
-def bug_is_recent(bug, num_of_days):
+def is_bug_recent(bug, num_of_days):
     """Determine if a bug was created in the last X days and print the bug
        information."""
     invalid_states = ["Incomplete", "Opinion", "Won't Fix", "Expired",
@@ -62,7 +62,7 @@ def main():
     for bug in project.searchTasks(status=LPSTATUS,
                                    omit_duplicates=True,
                                    order_by='-importance'):
-        if bug_is_recent(bug, args.days):
+        if is_bug_recent(bug, args.days):
             print "%d. [%s] %s" % (bug_counter,
                                    bug.importance,
                                    bug.title)
