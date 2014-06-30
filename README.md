@@ -1,4 +1,4 @@
-Several basic scripts I use for OpenStack Infrastructure related tasks.
+Some basic scripts for wrangling bug information from Launchpad.
 
 recent_bugs.py is intended to summarize the bugs opened in a given Launchpad
 project, over a given period of time, the default is two days.
