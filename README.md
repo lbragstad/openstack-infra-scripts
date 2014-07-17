@@ -1,3 +1,5 @@
+### Finding Recent Bugs
+
 Some basic scripts for wrangling bug information from Launchpad.
 
 recent_bugs.py is intended to summarize the bugs opened in a given Launchpad
