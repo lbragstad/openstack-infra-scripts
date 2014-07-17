@@ -4,3 +4,4 @@ cinder/*
 glance/*
 neutron/*
 tempest/*
+.python-*
