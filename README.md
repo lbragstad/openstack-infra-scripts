@@ -21,3 +21,12 @@ For example, the following will gather all OpenStack Keystone bugs opened
 in the last week:
 
 `$ python recent_bugs.py -d 7 -p keystone`
+
+# Installing Dependencies
+
+To run this script, you'll need launchpadlib
+
+```
+$ pip install --allow-all-external --allow-unverified \
+lazr.authentication launchpadlib
+```
