@@ -22,7 +22,7 @@ in the last week:
 
 `$ python recent_bugs.py -d 7 -p keystone`
 
-# Installing Dependencies
+### Installing Dependencies
 
 To run this script, you'll need launchpadlib
 
