@@ -64,10 +64,10 @@ def main():
                                    omit_duplicates=True,
                                    order_by='-importance'):
         if is_bug_recent(bug, args.days):
-            print "%d. [%s] %s" % (bug_counter,
-                                   bug.importance,
-                                   bug.title)
-            print "\t%s" % (bug.status)
+            print "%d. [%s:%s] %s" % (bug_counter,
+                                      bug.importance,
+                                      bug.status,
+                                      bug.title)
             if bug.assignee is not None:
                 print "\tAssigned to %s" % (bug.assignee.display_name)
             else:
