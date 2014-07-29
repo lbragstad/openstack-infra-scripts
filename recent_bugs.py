@@ -67,6 +67,12 @@ def main():
             print "%d. [%s] %s" % (bug_counter,
                                    bug.importance,
                                    bug.title)
+            print "\t%s" % (bug.status)
+            if bug.assignee is not None:
+                print "\tAssigned to %s" % (bug.assignee.display_name)
+            else:
+                print "\tNot Assigned"
+
             print "\t%s \n" % (bug.web_link)
             bug_counter += 1
 
