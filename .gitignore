@@ -5,3 +5,4 @@ glance/*
 neutron/*
 tempest/*
 .python-*
+keystonemiddleware/*
