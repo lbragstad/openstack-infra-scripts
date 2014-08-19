@@ -39,6 +39,39 @@ def is_bug_recent(bug, num_of_days):
             return True
 
 
+def generate_html_header():
+    print('<!DOCTYPE html>')
+    print('<html><body><pre style="font-family:verdana;font-size:15px">')
+
+
+def generate_html_footer():
+    print('</pre></body></html>')
+
+
+def print_entry_in_html(bug, bug_counter):
+    print "%d. [%s:%s] <a href=\"%s\" target=\"_blank\">%s</a>" % (
+            bug_counter, bug.importance, bug.status, bug.web_link, bug.title)
+    if bug.assignee is not None:
+        print "\tAssigned to %s\n" % (bug.assignee.display_name)
+    else:
+        print "\tNot Assigned\n"
+
+    #print "<a href=\"%s\">\t%s</a> \n" % (bug.web_link, bug.title)
+
+
+def print_entry(bug, bug_counter):
+    print "%d. [%s:%s] %s" % (bug_counter,
+                              bug.importance,
+                              bug.status,
+                              bug.title)
+    if bug.assignee is not None:
+        print "\tAssigned to %s" % (bug.assignee.display_name)
+    else:
+        print "\tNot Assigned"
+
+    print "\t%s \n" % (bug.web_link)
+
+
 def main():
     parser = argparse.ArgumentParser(description='summarize bugs from a '
              'launchpad project')
@@ -46,6 +79,9 @@ def main():
             default='2',
             type=int,
             help='history in number of days')
+    parser.add_argument('-f', '--formatting',
+                        action='store_true',
+                        help='output report in generated HTML')
     parser.add_argument('-p', '--project',
             nargs=1,
             required=True,
@@ -56,6 +92,11 @@ def main():
                                             'production',
                                             args.project[0])
 
+    if args.formatting:
+        generate_html_header()
+        output_method = print_entry_in_html
+    else:
+        output_method = print_entry
 
     project = launchpad.projects[args.project[0]]
     bug_counter = 0
@@ -64,17 +105,11 @@ def main():
                                    omit_duplicates=True,
                                    order_by='-importance'):
         if is_bug_recent(bug, args.days):
-            print "%d. [%s:%s] %s" % (bug_counter,
-                                      bug.importance,
-                                      bug.status,
-                                      bug.title)
-            if bug.assignee is not None:
-                print "\tAssigned to %s" % (bug.assignee.display_name)
-            else:
-                print "\tNot Assigned"
-
-            print "\t%s \n" % (bug.web_link)
+            output_method(bug, bug_counter)
             bug_counter += 1
+
+    if args.formatting:
+        generate_html_footer()
 
 
 if __name__ == '__main__':
