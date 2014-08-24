@@ -44,6 +44,10 @@ def generate_html_header():
     print('<html><body><pre style="font-family:verdana;font-size:15px">')
 
 
+def generate_project_header(project):
+    print ('<h1>%s</h1>' % project)
+
+
 def generate_html_footer():
     print('</pre></body></html>')
 
@@ -55,8 +59,6 @@ def print_entry_in_html(bug, bug_counter):
         print "\tAssigned to %s\n" % (bug.assignee.display_name)
     else:
         print "\tNot Assigned\n"
-
-    #print "<a href=\"%s\">\t%s</a> \n" % (bug.web_link, bug.title)
 
 
 def print_entry(bug, bug_counter):
@@ -83,30 +85,39 @@ def main():
                         action='store_true',
                         help='output report in generated HTML')
     parser.add_argument('-p', '--project',
-            nargs=1,
+            nargs='+',
             required=True,
             help='launchpad project to pull bugs from')
     args = parser.parse_args()
 
-    launchpad = Launchpad.login_anonymously('OpenStack Recent Bugs',
-                                            'production',
-                                            args.project[0])
-
     if args.formatting:
         generate_html_header()
-        output_method = print_entry_in_html
-    else:
-        output_method = print_entry
 
-    project = launchpad.projects[args.project[0]]
-    bug_counter = 0
+    for launchpad_project in args.project:
+        try:
+            launchpad = Launchpad.login_anonymously('OpenStack Recent Bugs',
+                                                    'production',
+                                                    launchpad_project)
+            project = launchpad.projects[launchpad_project]
+        except KeyError:
+            print ('%s does not exist in Launchpad, client is assumed to be '
+                   'in error\n' % launchpad_project)
+            continue
+        if args.formatting:
+            generate_project_header(launchpad_project)
+            output_method = print_entry_in_html
+        else:
+            print ('%s bugs:\n' % launchpad_project)
+            output_method = print_entry
 
-    for bug in project.searchTasks(status=LPSTATUS,
-                                   omit_duplicates=True,
-                                   order_by='-importance'):
-        if is_bug_recent(bug, args.days):
-            output_method(bug, bug_counter)
-            bug_counter += 1
+        bug_counter = 0
+
+        for bug in project.searchTasks(status=LPSTATUS,
+                                    omit_duplicates=True,
+                                    order_by='-importance'):
+            if is_bug_recent(bug, args.days):
+                output_method(bug, bug_counter)
+                bug_counter += 1
 
     if args.formatting:
         generate_html_footer()
