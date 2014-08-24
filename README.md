@@ -16,7 +16,7 @@ optional arguments:
   -d DAYS, --days DAYS  history in number of days
   -f, --formatting      output report in generated HTML
   -p PROJECT [PROJECT ...], --project PROJECT [PROJECT ...]
-                        launchpad project to pull bugs from
+                        launchpad project(s) to pull bugs from
 ```
 
 For example, the following will gather all OpenStack Keystone bugs opened
