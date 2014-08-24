@@ -62,7 +62,10 @@ def print_entry_in_html(bug, bug_counter):
                 bug_counter, bug.importance, bug.status, bug.web_link,
                 bug.web_link)
     if bug.assignee is not None:
-        print "\tAssigned to %s\n" % (bug.assignee.display_name)
+        try:
+            print "\tAssigned to %s\n" % (bug.assignee.display_name)
+        except (TypeError, UnicodeEncodeError):
+            print "\tAssigned\n"
     else:
         print "\tNot Assigned\n"
 
@@ -77,7 +80,10 @@ def print_entry(bug, bug_counter):
                 bug_counter, bug.importance, bug.status, bug.web_link,
                 bug.web_link)
     if bug.assignee is not None:
-        print "\tAssigned to %s" % (bug.assignee.display_name)
+        try:
+            print "\tAssigned to %s\n" % (bug.assignee.display_name)
+        except (TypeError, UnicodeEncodeError):
+            print "\tAssigned\n"
     else:
         print "\tNot Assigned"
 
