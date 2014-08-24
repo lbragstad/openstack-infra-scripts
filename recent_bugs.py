@@ -53,8 +53,14 @@ def generate_html_footer():
 
 
 def print_entry_in_html(bug, bug_counter):
-    print "%d. [%s:%s] <a href=\"%s\" target=\"_blank\">%s</a>" % (
-            bug_counter, bug.importance, bug.status, bug.web_link, bug.title)
+    try:
+        print "%d. [%s:%s] <a href=\"%s\" target=\"_blank\">%s</a>" % (
+                bug_counter, bug.importance, bug.status, bug.web_link,
+                bug.title)
+    except (TypeError, UnicodeEncodeError):
+        print "%d. [%s:%s] <a href=\"%s\" target=\"_blank\">%s</a>" % (
+                bug_counter, bug.importance, bug.status, bug.web_link,
+                bug.web_link)
     if bug.assignee is not None:
         print "\tAssigned to %s\n" % (bug.assignee.display_name)
     else:
@@ -62,10 +68,14 @@ def print_entry_in_html(bug, bug_counter):
 
 
 def print_entry(bug, bug_counter):
-    print "%d. [%s:%s] %s" % (bug_counter,
-                              bug.importance,
-                              bug.status,
-                              bug.title)
+    try:
+        print "%d. [%s:%s] <a href=\"%s\" target=\"_blank\">%s</a>" % (
+                bug_counter, bug.importance, bug.status, bug.web_link,
+                bug.title)
+    except (TypeError, UnicodeEncodeError):
+        print "%d. [%s:%s] <a href=\"%s\" target=\"_blank\">%s</a>" % (
+                bug_counter, bug.importance, bug.status, bug.web_link,
+                bug.web_link)
     if bug.assignee is not None:
         print "\tAssigned to %s" % (bug.assignee.display_name)
     else:
