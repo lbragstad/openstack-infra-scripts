@@ -7,7 +7,7 @@ project, over a given period of time, the default is two days.
 
 ```
 $ python recent_bugs.py -h
-usage: recent_bugs.py [-h] [-d DAYS] [-f] -p PROJECT
+usage: recent_bugs.py [-h] [-d DAYS] [-f] -p PROJECT [PROJECT ...]
 
 summarize bugs from a launchpad project
 
@@ -15,7 +15,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -d DAYS, --days DAYS  history in number of days
   -f, --formatting      output report in generated HTML
-  -p PROJECT, --project PROJECT
+  -p PROJECT [PROJECT ...], --project PROJECT [PROJECT ...]
                         launchpad project to pull bugs from
 ```
 

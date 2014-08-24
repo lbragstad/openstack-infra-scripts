@@ -87,7 +87,7 @@ def main():
     parser.add_argument('-p', '--project',
             nargs='+',
             required=True,
-            help='launchpad project to pull bugs from')
+            help='launchpad project(s) to pull bugs from')
     args = parser.parse_args()
 
     if args.formatting:
