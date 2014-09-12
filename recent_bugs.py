@@ -14,6 +14,7 @@
 
 import argparse
 import datetime
+import json
 import os
 
 from launchpadlib.launchpad import Launchpad
@@ -52,7 +53,7 @@ def generate_html_footer():
     print('</pre></body></html>')
 
 
-def print_entry_in_html(bug, bug_counter):
+def print_entry_in_html(bug, bug_counter, tags=None):
     try:
         print "%d. [%s:%s] <a href=\"%s\" target=\"_blank\">%s</a>" % (
                 bug_counter, bug.importance, bug.status, bug.web_link,
@@ -69,16 +70,20 @@ def print_entry_in_html(bug, bug_counter):
     else:
         print "\tNot Assigned\n"
 
+    if tags:
+        line = ''
+        for tag in tags:
+            line = line + tag + ' '
+        print "\tTags: %s" % (line)
 
-def print_entry(bug, bug_counter):
+
+def print_entry(bug, bug_counter, tags=None):
     try:
-        print "%d. [%s:%s] <a href=\"%s\" target=\"_blank\">%s</a>" % (
-                bug_counter, bug.importance, bug.status, bug.web_link,
+        print "%d. [%s:%s] \"%s\"" % (bug_counter, bug.importance, bug.status,
                 bug.title)
     except (TypeError, UnicodeEncodeError):
-        print "%d. [%s:%s] <a href=\"%s\" target=\"_blank\">%s</a>" % (
-                bug_counter, bug.importance, bug.status, bug.web_link,
-                bug.web_link)
+        print "%d. [%s:%s] \"%s\"" % (bug_counter, bug.importance, bug.status)
+
     if bug.assignee is not None:
         try:
             print "\tAssigned to %s\n" % (bug.assignee.display_name)
@@ -86,6 +91,12 @@ def print_entry(bug, bug_counter):
             print "\tAssigned\n"
     else:
         print "\tNot Assigned"
+
+    if tags:
+        line = ''
+        for tag in tags:
+            line = line + tag + ' '
+        print "\tTags: %s" % (line)
 
     print "\t%s \n" % (bug.web_link)
 
@@ -115,6 +126,7 @@ def main():
                                                     'production',
                                                     launchpad_project)
             project = launchpad.projects[launchpad_project]
+            browser = launchpad._browser
         except KeyError:
             print ('%s does not exist in Launchpad, client is assumed to be '
                    'in error\n' % launchpad_project)
@@ -132,7 +144,10 @@ def main():
                                     omit_duplicates=True,
                                     order_by='-importance'):
             if is_bug_recent(bug, args.days):
-                output_method(bug, bug_counter)
+                full_bug = browser.get(bug.bug_link)
+                full_bug = json.loads(full_bug)
+                tags = full_bug.get('tags', None)
+                output_method(bug, bug_counter, tags=tags)
                 bug_counter += 1
 
     if args.formatting:
