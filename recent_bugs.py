@@ -62,6 +62,12 @@ def print_entry_in_html(bug, bug_counter, tags=None):
         print "%d. [%s:%s] <a href=\"%s\" target=\"_blank\">%s</a>" % (
                 bug_counter, bug.importance, bug.status, bug.web_link,
                 bug.web_link)
+    if tags:
+        line = ''
+        for tag in tags:
+            line = line + tag + ' '
+        print "\tTags: %s" % (line)
+
     if bug.assignee is not None:
         try:
             print "\tAssigned to %s\n" % (bug.assignee.display_name)
@@ -69,12 +75,6 @@ def print_entry_in_html(bug, bug_counter, tags=None):
             print "\tAssigned\n"
     else:
         print "\tNot Assigned\n"
-
-    if tags:
-        line = ''
-        for tag in tags:
-            line = line + tag + ' '
-        print "\tTags: %s" % (line)
 
 
 def print_entry(bug, bug_counter, tags=None):
