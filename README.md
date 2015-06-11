@@ -14,7 +14,6 @@ summarize bugs from a launchpad project
 optional arguments:
   -h, --help            show this help message and exit
   -d DAYS, --days DAYS  history in number of days
-  -f, --formatting      output report in generated HTML
   -p PROJECT [PROJECT ...], --project PROJECT [PROJECT ...]
                         launchpad project(s) to pull bugs from
 ```
@@ -22,12 +21,7 @@ optional arguments:
 For example, the following will gather all OpenStack Keystone bugs opened
 in the last week:
 
-`$ python recent_bugs.py -d 7 -p keystone`
-
-You can also use the `--formatting` option to output bug reports in HTML and
-write them out to files, for example:
-
-`$ python recent_bugs.py -d 7 -f -p keystone > /var/www/html/bug_report.html`
+`$ python recent_bugs.py -d 7 -p keystone > /var/www/html/bug_report.html`
 
 The above command will generate a weekly bug report for Keystone, format the
 output as HTML, and write it out to an HTML file. This can be handy for setting
