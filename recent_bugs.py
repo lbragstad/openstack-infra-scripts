@@ -14,10 +14,11 @@
 
 import argparse
 import datetime
-import json
 import os
 
 from launchpadlib.launchpad import Launchpad
+from lxml import html
+from lxml.html import builder as E
 
 LPCACHEDIR = os.path.expanduser(os.environ.get('LPCACHEDIR',
                                                '~/.launchpadlib/cache'))
@@ -31,128 +32,81 @@ def is_bug_recent(bug, num_of_days):
                       "Fix Released", "Fix Committed"]
     if bug.status not in invalid_states:
         # Create timedelta object to compare bug creation times against.
-        # Let's print out the bug from the last two days.
         delta = datetime.timedelta(days=num_of_days)
         today = datetime.datetime.today()
         # Replace tzinfo so that it doesn't mess with comparisons.
         bug_created_time = bug.date_created.replace(tzinfo=None)
         if bug_created_time >= today - delta:
             return True
+        return False
+    return False
 
 
-def generate_html_header():
-    print('<!DOCTYPE html>')
-    print('<html><body><pre style="font-family:verdana;font-size:15px">')
+def get_project(project_name):
+    """Return a launchpad project object given a project name."""
+    lp = Launchpad.login_anonymously('OpenStack Recent Bugs', 'production',
+                                     project_name)
+    return lp.projects[project_name]
 
 
-def generate_project_header(project):
-    print ('<h1>%s</h1>' % project)
+def get_open_project_bugs(project):
+    """Given a launchpad project object, grab all bugs."""
+    project_bugs = project.searchTasks(status=LPSTATUS,
+                                       omit_duplicates=True,
+                                       order_by='-importance')
+    return project_bugs
 
 
-def generate_html_footer():
-    print('</pre></body></html>')
+def get_project_report(project_name, project_bugs):
+    """Return html from a list of bugs."""
+    report = E.BODY(E.H2(E.CLASS("heading"), "%s (%d)" % (
+        project_name, len(project_bugs))))
+    for bug in project_bugs:
+        bug_link = E.A(bug.title, href=bug.web_link, target='_blank')
+        report.append(E.P("[%s:%s] " % (bug.importance, bug.status),
+                      bug_link))
+        if bug.assignee:
+            report.append(E.P("Assigned to: %s" % (bug.assignee.display_name)))
+    return report
 
 
-def print_entry_in_html(bug, bug_counter, tags=None):
-    try:
-        print "%d. [%s:%s] <a href=\"%s\" target=\"_blank\">%s</a>" % (
-                bug_counter, bug.importance, bug.status, bug.web_link,
-                bug.title)
-    except (TypeError, UnicodeEncodeError):
-        print "%d. [%s:%s] <a href=\"%s\" target=\"_blank\">%s</a>" % (
-                bug_counter, bug.importance, bug.status, bug.web_link,
-                bug.web_link)
-    if tags:
-        line = ''
-        for tag in tags:
-            line = line + tag + ' '
-        print "\tTags: %s" % (line)
-
-    if bug.assignee is not None:
+def main(days, project_names):
+    reports = []
+    for project_name in project_names:
         try:
-            print "\tAssigned to %s\n" % (bug.assignee.display_name)
-        except (TypeError, UnicodeEncodeError):
-            print "\tAssigned\n"
-    else:
-        print "\tNot Assigned\n"
-
-
-def print_entry(bug, bug_counter, tags=None):
-    try:
-        print "%d. [%s:%s] \"%s\"" % (bug_counter, bug.importance, bug.status,
-                bug.title)
-    except (TypeError, UnicodeEncodeError):
-        print "%d. [%s:%s] \"%s\"" % (bug_counter, bug.importance, bug.status)
-
-    if bug.assignee is not None:
-        try:
-            print "\tAssigned to %s\n" % (bug.assignee.display_name)
-        except (TypeError, UnicodeEncodeError):
-            print "\tAssigned\n"
-    else:
-        print "\tNot Assigned"
-
-    if tags:
-        line = ''
-        for tag in tags:
-            line = line + tag + ' '
-        print "\tTags: %s" % (line)
-
-    print "\t%s \n" % (bug.web_link)
-
-
-def main():
-    parser = argparse.ArgumentParser(description='summarize bugs from a '
-             'launchpad project')
-    parser.add_argument('-d', '--days',
-            default='2',
-            type=int,
-            help='history in number of days')
-    parser.add_argument('-f', '--formatting',
-                        action='store_true',
-                        help='output report in generated HTML')
-    parser.add_argument('-p', '--project',
-            nargs='+',
-            required=True,
-            help='launchpad project(s) to pull bugs from')
-    args = parser.parse_args()
-
-    if args.formatting:
-        generate_html_header()
-
-    for launchpad_project in args.project:
-        try:
-            launchpad = Launchpad.login_anonymously('OpenStack Recent Bugs',
-                                                    'production',
-                                                    launchpad_project)
-            project = launchpad.projects[launchpad_project]
-            browser = launchpad._browser
+            project = get_project(project_name)
         except KeyError:
-            print ('%s does not exist in Launchpad, client is assumed to be '
-                   'in error\n' % launchpad_project)
-            continue
-        if args.formatting:
-            generate_project_header(launchpad_project)
-            output_method = print_entry_in_html
-        else:
-            print ('%s bugs:\n' % launchpad_project)
-            output_method = print_entry
+            raise Exception('%s does not exist in Launchpad' % project_name)
 
-        bug_counter = 0
+        open_project_bugs = get_open_project_bugs(project)
+        recent_project_bugs = []
+        for bug in open_project_bugs:
+            if is_bug_recent(bug, days):
+                recent_project_bugs.append(bug)
 
-        for bug in project.searchTasks(status=LPSTATUS,
-                                    omit_duplicates=True,
-                                    order_by='-importance'):
-            if is_bug_recent(bug, args.days):
-                full_bug = browser.get(bug.bug_link)
-                full_bug = json.loads(full_bug)
-                tags = full_bug.get('tags', None)
-                output_method(bug, bug_counter, tags=tags)
-                bug_counter += 1
+        # format bugs into html
+        reports.append(get_project_report(project_name, recent_project_bugs))
 
-    if args.formatting:
-        generate_html_footer()
+    entire_bug_report = E.HTML()
+    for report in reports:
+        entire_bug_report.append(report)
+
+    print html.tostring(entire_bug_report)
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='summarize bugs from a '
+                                     'launchpad project')
+    parser.add_argument('-d',
+                        '--days',
+                        default='2',
+                        type=int,
+                        help='history in number of days')
+    parser.add_argument('-p',
+                        '--project',
+                        nargs='+',
+                        required=True,
+                        help='launchpad project(s) to pull bugs from')
+    args = parser.parse_args()
+
+    main(args.days, args.project)
