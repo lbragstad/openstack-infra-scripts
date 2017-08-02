@@ -1,37 +1,4 @@
 ### Finding Recent Bugs
 
-Some basic scripts for wrangling bug information from Launchpad.
+These scripts have moved the [launchpad-toolkit repository](https://github.com/lbragstad/launchpad-toolkit).
 
-recent_bugs.py is intended to summarize the bugs opened in a given Launchpad
-project, over a given period of time, the default is two days.
-
-```
-$ python recent_bugs.py -h
-usage: recent_bugs.py [-h] [-d DAYS] -p PROJECT [PROJECT ...]
-
-summarize bugs from a launchpad project
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -d DAYS, --days DAYS  history in number of days
-  -p PROJECT [PROJECT ...], --project PROJECT [PROJECT ...]
-                        launchpad project(s) to pull bugs from
-```
-
-For example, the following will gather all OpenStack Keystone bugs opened
-in the last week:
-
-`$ python recent_bugs.py -d 7 -p keystone > /var/www/html/bug_report.html`
-
-The above command will generate a weekly bug report for Keystone, format the
-output as HTML, and write it out to an HTML file. This can be handy for setting
-up cronjobs to run on a schedule and publish reports.
-
-### Installing Dependencies
-
-To run this script, you'll need launchpadlib
-
-```
-$ pip install --allow-all-external --allow-unverified \
-lazr.authentication launchpadlib
-```

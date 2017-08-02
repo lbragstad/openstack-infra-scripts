@@ -1,4 +1,0 @@
-lxml
-lazr.authentication
-launchpadlib
-simplejson
